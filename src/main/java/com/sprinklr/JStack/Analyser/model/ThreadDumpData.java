@@ -4,13 +4,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Component;
 
 @Component
-@Document(collection = "AllThreadDumpData")
+//@Document(collection = "AllThreadDumpData")
 public class ThreadDumpData {
     private long threadCount;
     //Can't use RUNNABLE since the tool which converts our model into JSON will make it lowercase.
     private long runnable;
     private long waiting;
     private long timed_waiting;
+
+    ThreadDumpData() {
+    }
 
     public long getThreadCount() {
         return threadCount;

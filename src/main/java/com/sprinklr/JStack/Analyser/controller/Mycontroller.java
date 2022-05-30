@@ -1,6 +1,7 @@
 package com.sprinklr.JStack.Analyser.controller;
 
 
+import com.sprinklr.JStack.Analyser.model.CombinedThreadDump;
 import com.sprinklr.JStack.Analyser.model.ThreadDumpData;
 import com.sprinklr.JStack.Analyser.service.ThreadDumpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +28,20 @@ public class Mycontroller {
         return "Hello world";
     }
     @PostMapping(value = "/api")
-    public ResponseEntity<ThreadDumpData> uploadFile(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file) {
         long threadCount = 0;
-        ThreadDumpData threadDumpData = null;
+        CombinedThreadDump combinedThreadDump  = null;
         try {
             byte[] bytes = file.getBytes();
             String str = new String(bytes);
             Path path = Paths.get(file.getOriginalFilename());
 //            Files.write(path, bytes);
-            threadDumpData = threadDumpService.convertToWorkableFormat(str);
+            combinedThreadDump = threadDumpService.convertToWorkableFormat(str);
             System.out.println(path.getFileName());
             
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        return new ResponseEntity<>(threadDumpData, HttpStatus.OK);
+        return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
     }
 }
