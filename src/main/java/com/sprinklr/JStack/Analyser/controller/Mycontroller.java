@@ -2,7 +2,6 @@ package com.sprinklr.JStack.Analyser.controller;
 
 
 import com.sprinklr.JStack.Analyser.model.CombinedThreadDump;
-import com.sprinklr.JStack.Analyser.model.ThreadDumpData;
 import com.sprinklr.JStack.Analyser.service.ThreadDumpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,9 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 public class Mycontroller {
@@ -24,21 +20,20 @@ public class Mycontroller {
     private ThreadDumpService threadDumpService;
 
     @GetMapping(value = "/api")
-    String getHome(){
-        return "Hello world";
+    String getHome() {
+        return "Server is UP! ";
     }
+
     @PostMapping(value = "/api")
     public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file) {
-        long threadCount = 0;
-        CombinedThreadDump combinedThreadDump  = null;
+        CombinedThreadDump combinedThreadDump = null;
         try {
             byte[] bytes = file.getBytes();
             String str = new String(bytes);
-            Path path = Paths.get(file.getOriginalFilename());
+//            Path path = Paths.get(file.getOriginalFilename());
 //            Files.write(path, bytes);
-            combinedThreadDump = threadDumpService.convertToWorkableFormat(str);
-            System.out.println(path.getFileName());
-            
+            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str);
+            System.out.println((combinedThreadDump.toString()));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

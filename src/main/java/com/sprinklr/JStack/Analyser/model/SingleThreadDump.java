@@ -29,7 +29,9 @@ public class SingleThreadDump {
         //TODO: Handle the last thread
         for(int i = 0;i<firstIndexOfThreads.size()-1;i++){
             int startIndex = firstIndexOfThreads.get(i);
-            int lastIndex = firstIndexOfThreads.get(i + 1);
+            int lastIndex = startIndex + 1;
+            if(i+1 < firstIndexOfThreads.size())
+                lastIndex = firstIndexOfThreads.get(i + 1);
             String[] currentThreadData = Arrays.copyOfRange(eachDumpData,startIndex,lastIndex);
             SingleThread currentThread = new SingleThread(currentThreadData);
             result.add(currentThread);
