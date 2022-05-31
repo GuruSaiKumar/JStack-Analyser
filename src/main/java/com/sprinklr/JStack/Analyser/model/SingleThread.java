@@ -16,6 +16,7 @@ public class SingleThread {
     String nid;
     String[] stackTrace;
 
+    //Default constructor is required for bean to initialise
     SingleThread() {
 
     }
@@ -25,12 +26,22 @@ public class SingleThread {
         this.stackTrace = Arrays.copyOfRange(data,1,len);
 
         String firstLine = data[0];
+        this.name = getThreadName(firstLine);
+
         this.isDaemon = firstLine.contains("daemon");
-        this.name = findByPrefix("\"",firstLine);
         this.tid = findByPrefix("tid=",firstLine);
         this.nid = findByPrefix("nid=",firstLine);
-        this.priority = convertToInt(findByPrefix("prio=",firstLine));
+        this.priority = convertToInt(findByPrefix(" prio=",firstLine));
         this.os_priority = convertToInt(findByPrefix("os_prio=",firstLine));
+
+        String secondLine = data[1];
+        this.state = findByPrefix("java.lang.Thread.State: ",secondLine);
+    }
+
+    private String getThreadName(String firstLine) {
+        int first = firstLine.indexOf('\"');
+        int last = firstLine.lastIndexOf('\"');
+        return firstLine.substring(first+1,last);
     }
 
     private int convertToInt(String str) {
@@ -38,6 +49,7 @@ public class SingleThread {
         return Integer.parseInt(str);
     }
 
+    //finds prefix in str and then returns the part next to it
     private String findByPrefix(String prefix,String str) {
         StringBuilder result = new StringBuilder();
         int index = str.indexOf(prefix);
