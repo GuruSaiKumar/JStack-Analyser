@@ -25,4 +25,11 @@ public class CombinedThreadDump {
     public void addSingleThreadDump(SingleThreadDump singleThreadDump) {
         this.lisOfSingleThreadDump.add(singleThreadDump);
     }
+
+    @Override
+    public String toString() {
+        return "CombinedThreadDump{" +
+                "lisOfSingleThreadDump=" + lisOfSingleThreadDump +
+                '}';
+    }
 }
