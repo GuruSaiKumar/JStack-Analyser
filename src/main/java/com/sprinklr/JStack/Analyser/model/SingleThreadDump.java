@@ -26,7 +26,6 @@ public class SingleThreadDump {
             if(eachDumpData[i].indexOf('\"') == 0)
                 firstIndexOfThreads.add(i);
         }
-        //TODO: Handle the last thread
         for(int i = 0;i<firstIndexOfThreads.size();i++){
             int startIndex = firstIndexOfThreads.get(i);
             int lastIndex = startIndex + 2;//adding 2 here since we access second line in SingleThread Constructor
@@ -37,5 +36,22 @@ public class SingleThreadDump {
             result.add(currentThread);
         }
         return result;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<SingleThread> getAllThreads() {
+        return allThreads;
+    }
+
+    public void setAllThreads(ArrayList<SingleThread> allThreads) {
+        this.allThreads = allThreads;
     }
 }

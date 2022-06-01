@@ -65,4 +65,67 @@ public class SingleThread {
     }
 
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public boolean isDaemon() {
+        return isDaemon;
+    }
+
+    public void setDaemon(boolean daemon) {
+        isDaemon = daemon;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public int getOs_priority() {
+        return os_priority;
+    }
+
+    public void setOs_priority(int os_priority) {
+        this.os_priority = os_priority;
+    }
+
+    public String getTid() {
+        return tid;
+    }
+
+    public void setTid(String tid) {
+        this.tid = tid;
+    }
+
+    public String getNid() {
+        return nid;
+    }
+
+    public void setNid(String nid) {
+        this.nid = nid;
+    }
+
+    public String[] getStackTrace() {
+        return stackTrace;
+    }
+
+    public void setStackTrace(String[] stackTrace) {
+        this.stackTrace = stackTrace;
+    }
 }
