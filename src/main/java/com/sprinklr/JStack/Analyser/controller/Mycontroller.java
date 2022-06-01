@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class Mycontroller {
@@ -25,7 +26,7 @@ public class Mycontroller {
     }
 
     @PostMapping(value = "/api")
-    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file) {
+    public CombinedThreadDump uploadFile(@RequestPart("file") MultipartFile file) {
         CombinedThreadDump combinedThreadDump = null;
         try {
             byte[] bytes = file.getBytes();
@@ -37,6 +38,12 @@ public class Mycontroller {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
+        System.out.println(combinedThreadDump);
+        return combinedThreadDump;
+//        return new ResponseEntity<CombinedThreadDump>(combinedThreadDump, HttpStatus.OK);
+    }
+    @GetMapping(value = "/api/all")
+    List<CombinedThreadDump> getAll(){
+        return threadDumpService.getAllCombinedThreadDumps();
     }
 }
