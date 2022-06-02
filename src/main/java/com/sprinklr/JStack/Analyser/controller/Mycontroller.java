@@ -26,21 +26,18 @@ public class Mycontroller {
     }
 
     @PostMapping(value = "/api")
-    public CombinedThreadDump uploadFile(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file) {
         CombinedThreadDump combinedThreadDump = null;
         try {
             byte[] bytes = file.getBytes();
             String str = new String(bytes);
-//            Path path = Paths.get(file.getOriginalFilename());
-//            Files.write(path, bytes);
             combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str);
             System.out.println((combinedThreadDump.toString()));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         System.out.println(combinedThreadDump);
-        return combinedThreadDump;
-//        return new ResponseEntity<CombinedThreadDump>(combinedThreadDump, HttpStatus.OK);
+        return new ResponseEntity<CombinedThreadDump>(combinedThreadDump, HttpStatus.OK);
     }
     @GetMapping(value = "/api/all")
     List<CombinedThreadDump> getAll(){

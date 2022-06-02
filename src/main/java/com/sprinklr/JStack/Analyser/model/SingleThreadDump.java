@@ -10,12 +10,14 @@ public class SingleThreadDump {
     private String name;
     private ArrayList<SingleThread> allThreads;
 
+    private Statistics statistics;
     SingleThreadDump() {
     }
 
     public SingleThreadDump(String[] eachDumpData) {
         this.name = eachDumpData[0] + '\n' + eachDumpData[1];
         this.allThreads = getAllThreads(eachDumpData);
+        this.statistics = new Statistics(allThreads);
     }
 
     private ArrayList<SingleThread> getAllThreads(String[] eachDumpData) {
@@ -33,6 +35,7 @@ public class SingleThreadDump {
                 lastIndex = firstIndexOfThreads.get(i + 1);
             String[] currentThreadData = Arrays.copyOfRange(eachDumpData,startIndex,lastIndex);
             SingleThread currentThread = new SingleThread(currentThreadData);
+//            currentThread.setStackTrace(null);
             result.add(currentThread);
         }
         return result;
@@ -53,5 +56,13 @@ public class SingleThreadDump {
 
     public void setAllThreads(ArrayList<SingleThread> allThreads) {
         this.allThreads = allThreads;
+    }
+
+    public Statistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
     }
 }
