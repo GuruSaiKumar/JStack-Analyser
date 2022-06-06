@@ -2,6 +2,7 @@ package com.sprinklr.JStack.Analyser.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Statistics {
     private final HashMap<String, ArrayList<Integer>> threadType;
@@ -21,6 +22,9 @@ public class Statistics {
                 SingleThread curThread = allThreads.get(index);
                 //Getting state
                 String state = curThread.getState();
+                if(Objects.equals(state, "")){
+                    state = "UNCLASSIFIED";
+                }
                 this.threadType.putIfAbsent(state, new ArrayList<Integer>());
                 this.threadType.get(state).add(index);
                 //Daemon Vs Non Daemon

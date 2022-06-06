@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
-@Component
 @Document(collection = "CombinedThreadDumpData")
 public class CombinedThreadDump {
     private ArrayList<SingleThreadDump> lisOfSingleThreadDump;

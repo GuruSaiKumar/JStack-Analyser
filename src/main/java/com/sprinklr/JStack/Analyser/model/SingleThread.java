@@ -2,10 +2,10 @@ package com.sprinklr.JStack.Analyser.model;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-@Component
 public class SingleThread {
     String name;
     String state;
@@ -14,7 +14,16 @@ public class SingleThread {
     int os_priority;
     String tid;
     String nid;
-    String[] stackTrace;
+    ArrayList<String> stackTrace;
+    int hashId;//This will be set in SingleThreadDump
+
+    public int getHashId() {
+        return hashId;
+    }
+
+    public void setHashId(int hashId) {
+        this.hashId = hashId;
+    }
 
     //Default constructor is required for bean to initialise
     SingleThread() {
@@ -23,7 +32,9 @@ public class SingleThread {
 
     SingleThread(String[] data){
         int len = data.length;
-        this.stackTrace = Arrays.copyOfRange(data,1,len);
+        String[] stackTraceArray = Arrays.copyOfRange(data,1,len);
+        this.stackTrace = new ArrayList<String>();
+        this.stackTrace.addAll(Arrays.asList(stackTraceArray));
 
         String firstLine = data[0];
         this.name = getThreadName(firstLine);
@@ -36,6 +47,7 @@ public class SingleThread {
 
         String secondLine = data[1];
         this.state = findByPrefix("java.lang.Thread.State: ",secondLine);
+        this.hashId = -1;
     }
 
     private String getThreadName(String firstLine) {
@@ -121,11 +133,11 @@ public class SingleThread {
         this.nid = nid;
     }
 
-    public String[] getStackTrace() {
+    public ArrayList<String> getStackTrace() {
         return stackTrace;
     }
 
-    public void setStackTrace(String[] stackTrace) {
+    public void setStackTrace(ArrayList<String> stackTrace) {
         this.stackTrace = stackTrace;
     }
 }
