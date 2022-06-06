@@ -22,8 +22,7 @@ public class SingleThreadDump {
         this.freqOfStackTraces = new HashMap<>();
         this.allThreads = new HashMap<>();
         buildAllThreads(eachDumpData);
-        //TODO: Change Statistics
-//        this.statistics = new Statistics(allThreads);
+        this.statistics = new Statistics(allThreads);
     }
 
     private void buildAllThreads(String[] eachDumpData) {
