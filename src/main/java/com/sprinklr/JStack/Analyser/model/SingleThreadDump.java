@@ -1,6 +1,5 @@
 package com.sprinklr.JStack.Analyser.model;
 
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +9,8 @@ public class SingleThreadDump {
     private String name;
     private HashMap<String,SingleThread> allThreads;// tid -> singleThread
     private HashMap<Integer, ArrayList<String>> allStackTraces;//hashId -> StackTrace
-    private HashMap<Integer,ArrayList<String>> freqOfStackTraces;//hashId -> list of tid
+    private HashMap<Integer,ArrayList<String>> hashIdToThreadIds;//hashId -> list of tid
+    private HashMap<String,ArrayList<String>> prefMatching;// prefix -> list of tid
     private Statistics statistics;
 
     SingleThreadDump() {
@@ -19,8 +19,9 @@ public class SingleThreadDump {
     public SingleThreadDump(String[] eachDumpData) {
         this.name = eachDumpData[0] + '\n' + eachDumpData[1];
         this.allStackTraces = new HashMap<>();
-        this.freqOfStackTraces = new HashMap<>();
+        this.hashIdToThreadIds = new HashMap<>();
         this.allThreads = new HashMap<>();
+        this.prefMatching = new HashMap<>();
         buildAllThreads(eachDumpData);
         this.statistics = new Statistics(allThreads);
     }
@@ -50,15 +51,41 @@ public class SingleThreadDump {
 
             allThreads.put(threadId,currentThread);
             allStackTraces.putIfAbsent(hashId,currentStackTrace);
-            freqOfStackTraces.putIfAbsent(hashId,new ArrayList<>());
-            freqOfStackTraces.get(hashId).add(threadId);
+            hashIdToThreadIds.putIfAbsent(hashId,new ArrayList<>());
+            hashIdToThreadIds.get(hashId).add(threadId);
 
+            //prefix matching
+            String prefix = getPrefix(currentThread.getName());
+            if(prefix!=null){
+                //Key of hashMap cannot contain '.'
+                if(prefix.indexOf('.')!=-1){
+                    System.out.println("THIS CANNOT BE : ");
+                    System.out.println(currentThread.getName());
+                    //TODO:
+                    prefix = "";
+                }
+                prefMatching.putIfAbsent(prefix,new ArrayList<>());
+                prefMatching.get(prefix).add(threadId);
+            }
         }
     }
 
     private int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
         int hashId = stackTrace.hashCode();
         return hashId;
+    }
+
+    private String getPrefix(String threadName){
+        int index = -1;
+        index = threadName.indexOf('-');
+        if(index!=-1){
+            return threadName.substring(0,index);
+        }
+        index = threadName.indexOf('#');
+        if(index!=-1){
+            return threadName.substring(0,index);
+        }
+        return null;
     }
 
     public String getName() {
@@ -85,12 +112,12 @@ public class SingleThreadDump {
         this.allStackTraces = allStackTraces;
     }
 
-    public HashMap<Integer, ArrayList<String>> getFreqOfStackTraces() {
-        return freqOfStackTraces;
+    public HashMap<Integer, ArrayList<String>> getHashIdToThreadIds() {
+        return hashIdToThreadIds;
     }
 
-    public void setFreqOfStackTraces(HashMap<Integer, ArrayList<String>> freqOfStackTraces) {
-        this.freqOfStackTraces = freqOfStackTraces;
+    public void setHashIdToThreadIds(HashMap<Integer, ArrayList<String>> hashIdToThreadIds) {
+        this.hashIdToThreadIds = hashIdToThreadIds;
     }
 
     public Statistics getStatistics() {
@@ -99,5 +126,13 @@ public class SingleThreadDump {
 
     public void setStatistics(Statistics statistics) {
         this.statistics = statistics;
+    }
+
+    public HashMap<String, ArrayList<String>> getPrefMatching() {
+        return prefMatching;
+    }
+
+    public void setPrefMatching(HashMap<String, ArrayList<String>> prefMatching) {
+        this.prefMatching = prefMatching;
     }
 }
