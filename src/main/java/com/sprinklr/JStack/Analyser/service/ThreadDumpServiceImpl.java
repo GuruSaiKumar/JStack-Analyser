@@ -29,7 +29,11 @@ public class ThreadDumpServiceImpl implements ThreadDumpService{
             SingleThreadDump singleThreadDump = new SingleThreadDump(eachDumpData);
             combinedThreadDump.addSingleThreadDump(singleThreadDump);
         }
-        return combinedThreadDumpRepo.save(combinedThreadDump);
+        //After adding all the singleThreadDumps analyse common props.
+        combinedThreadDump.analyseCommonStuff();
+
+//        combinedThreadDumpRepo.save(combinedThreadDump);
+        return combinedThreadDump;
     }
 
     @Override

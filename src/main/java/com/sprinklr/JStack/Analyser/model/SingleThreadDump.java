@@ -59,10 +59,9 @@ public class SingleThreadDump {
             if(prefix!=null){
                 //Key of hashMap cannot contain '.'
                 if(prefix.indexOf('.')!=-1){
-                    System.out.println("THIS CANNOT BE : ");
+                    System.out.println("THIS CANNOT BE USED AS A KEY: ");
                     System.out.println(currentThread.getName());
-                    //TODO:
-                    prefix = "";
+                    prefix = "miscellaneous";
                 }
                 prefMatching.putIfAbsent(prefix,new ArrayList<>());
                 prefMatching.get(prefix).add(threadId);
