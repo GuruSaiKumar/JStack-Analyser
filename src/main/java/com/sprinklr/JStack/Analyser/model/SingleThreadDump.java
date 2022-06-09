@@ -4,6 +4,9 @@ package com.sprinklr.JStack.Analyser.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SingleThreadDump {
     private String name;
@@ -16,17 +19,19 @@ public class SingleThreadDump {
     SingleThreadDump() {
     }
 
-    public SingleThreadDump(String[] eachDumpData) {
+    public SingleThreadDump(String[] eachDumpData, String regex) {
         this.name = eachDumpData[0] + '\n' + eachDumpData[1];
         this.allStackTraces = new HashMap<>();
         this.hashIdToThreadIds = new HashMap<>();
         this.allThreads = new HashMap<>();
         this.prefMatching = new HashMap<>();
-        buildAllThreads(eachDumpData);
+        buildAllThreads(eachDumpData,regex);
         this.statistics = new Statistics(allThreads);
     }
 
-    private void buildAllThreads(String[] eachDumpData) {
+    private void buildAllThreads(String[] eachDumpData,String regex) {
+        Pattern pattern = Pattern.compile(regex);
+
         ArrayList<SingleThread> result = new ArrayList<>();
         ArrayList<Integer> firstIndexOfThreads = new ArrayList<>();
         for (int i = 0; i < eachDumpData.length; i++) {
@@ -42,6 +47,11 @@ public class SingleThreadDump {
             String[] currentThreadData = Arrays.copyOfRange(eachDumpData, startIndex, lastIndex);
 
             SingleThread currentThread = new SingleThread(currentThreadData);
+            //Checking the regex part
+            String curThreadName = currentThread.getName();
+            Matcher matcher = pattern.matcher(curThreadName);
+            if(!matcher.find()) continue;
+
             ArrayList<String> currentStackTrace = currentThread.getStackTrace();
             String threadId = currentThread.tid;
             int hashId = getHashIdOfStackTrace(currentStackTrace);

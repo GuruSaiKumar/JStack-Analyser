@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ThreadDumpServiceImpl implements ThreadDumpService{
@@ -20,13 +21,13 @@ public class ThreadDumpServiceImpl implements ThreadDumpService{
         this.combinedThreadDumpRepo = combinedThreadDumpRepo;
     }
     @Override
-    public CombinedThreadDump convertToWorkableFormat(String str) {
+    public CombinedThreadDump convertToWorkableFormat(String str, String regex) {
         String[] lines = str.split("\\r?\\n");
         ArrayList<String[]> allDumpsData = getAllDumpsData(lines);
 
         CombinedThreadDump combinedThreadDump = new CombinedThreadDump();
         for(String[] eachDumpData : allDumpsData){
-            SingleThreadDump singleThreadDump = new SingleThreadDump(eachDumpData);
+            SingleThreadDump singleThreadDump = new SingleThreadDump(eachDumpData,regex);
             combinedThreadDump.addSingleThreadDump(singleThreadDump);
         }
         //After adding all the singleThreadDumps analyse common props.

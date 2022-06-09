@@ -6,10 +6,7 @@ import com.sprinklr.JStack.Analyser.service.ThreadDumpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -20,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -33,7 +31,7 @@ public class Mycontroller {
     }
 
     @PostMapping(value = "/api")
-    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam(name="regex",defaultValue = ".")Optional<String> regex) {
         CombinedThreadDump combinedThreadDump = null;
         try {
             String fileName = file.getOriginalFilename();
@@ -53,7 +51,7 @@ public class Mycontroller {
             byte[] finalBytes = Files.readAllBytes(path);
             Files.delete(path);//delete the final txt file
             String str = new String(finalBytes);
-            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str);
+            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str,regex.get());
             System.out.println((combinedThreadDump.toString()));
         } catch (IOException e) {
             System.out.println(e.getMessage());
