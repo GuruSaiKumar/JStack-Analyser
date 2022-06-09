@@ -4,7 +4,6 @@ package com.sprinklr.JStack.Analyser.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +13,10 @@ public class SingleThreadDump {
     private HashMap<Integer, ArrayList<String>> allStackTraces;//hashId -> StackTrace
     private HashMap<Integer,ArrayList<String>> hashIdToThreadIds;//hashId -> list of tid
     private HashMap<String,ArrayList<String>> prefMatching;// prefix -> list of tid
+    private HashMap<Integer, String> allMethods;//methodHashId -> method(String)
+    private HashMap<Integer,ArrayList<String>> methodHashIdToThreadIds;//methodHashId -> list of tid
+
+
     private Statistics statistics;
 
     SingleThreadDump() {
@@ -25,6 +28,8 @@ public class SingleThreadDump {
         this.hashIdToThreadIds = new HashMap<>();
         this.allThreads = new HashMap<>();
         this.prefMatching = new HashMap<>();
+        this.allMethods = new HashMap<>();
+        this.methodHashIdToThreadIds = new HashMap<>();
         buildAllThreads(eachDumpData,regex);
         this.statistics = new Statistics(allThreads);
     }
@@ -76,12 +81,25 @@ public class SingleThreadDump {
                 prefMatching.putIfAbsent(prefix,new ArrayList<>());
                 prefMatching.get(prefix).add(threadId);
             }
+
+            //For getting most used method.
+            String curMethod = currentThread.getMethod();
+            if(curMethod.length()>0){
+                int methodHash = getHashIdMethod(curMethod);
+                allMethods.putIfAbsent(methodHash,curMethod);
+                methodHashIdToThreadIds.putIfAbsent(methodHash,new ArrayList<>());
+                methodHashIdToThreadIds.get(methodHash).add(threadId);
+            }
         }
     }
 
     private int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
         int hashId = stackTrace.hashCode();
         return hashId;
+    }
+    private int getHashIdMethod(String method) {
+        int methodHashId = method.hashCode();
+        return methodHashId;
     }
 
     private String getPrefix(String threadName){
@@ -143,5 +161,21 @@ public class SingleThreadDump {
 
     public void setPrefMatching(HashMap<String, ArrayList<String>> prefMatching) {
         this.prefMatching = prefMatching;
+    }
+
+    public HashMap<Integer, String> getAllMethods() {
+        return allMethods;
+    }
+
+    public void setAllMethods(HashMap<Integer, String> allMethods) {
+        this.allMethods = allMethods;
+    }
+
+    public HashMap<Integer, ArrayList<String>> getMethodHashIdToThreadIds() {
+        return methodHashIdToThreadIds;
+    }
+
+    public void setMethodHashIdToThreadIds(HashMap<Integer, ArrayList<String>> methodHashIdToThreadIds) {
+        this.methodHashIdToThreadIds = methodHashIdToThreadIds;
     }
 }

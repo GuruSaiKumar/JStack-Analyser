@@ -15,6 +15,7 @@ public class SingleThread {
     String tid;
     String nid;
     ArrayList<String> stackTrace;
+    String method;//The method at which the thread is running
     int hashId;//This will be set in SingleThreadDump
 
     public int getHashId() {
@@ -30,9 +31,9 @@ public class SingleThread {
 
     }
 
-    SingleThread(String[] data){
+    SingleThread(String[] data) {
         int len = data.length;
-        String[] stackTraceArray = Arrays.copyOfRange(data,1,len);
+        String[] stackTraceArray = Arrays.copyOfRange(data, 1, len);
         this.stackTrace = new ArrayList<String>();
         this.stackTrace.addAll(Arrays.asList(stackTraceArray));
 
@@ -40,36 +41,49 @@ public class SingleThread {
         this.name = getThreadName(firstLine);
 
         this.isDaemon = firstLine.contains("daemon");
-        this.tid = findByPrefix("tid=",firstLine);
-        this.nid = findByPrefix("nid=",firstLine);
-        this.priority = convertToInt(findByPrefix(" prio=",firstLine));
-        this.os_priority = convertToInt(findByPrefix("os_prio=",firstLine));
+        this.tid = findByPrefix("tid=", firstLine);
+        this.nid = findByPrefix("nid=", firstLine);
+        this.priority = convertToInt(findByPrefix(" prio=", firstLine));
+        this.os_priority = convertToInt(findByPrefix("os_prio=", firstLine));
 
-        String secondLine = data[1];
-        this.state = findByPrefix("java.lang.Thread.State: ",secondLine);
+        String secondLine = data[1];//It is guaranteed to have at least 2 lines
+        this.state = findByPrefix("java.lang.Thread.State: ", secondLine);
         this.hashId = -1;
+
+        this.method = getMethodName();
+    }
+
+    private String getMethodName() {
+        String result = "";
+        //Method Exists if it has second line and is nonempty.
+        if (stackTrace.size() >= 2 && stackTrace.get(1).length() > 0) {
+            String secondLine = stackTrace.get(1);
+            int index = secondLine.indexOf("at ");
+            result = secondLine.substring(index + 3);//adding 3 to skip "at "
+        }
+        return result;
     }
 
     private String getThreadName(String firstLine) {
         int first = firstLine.indexOf('\"');
         int last = firstLine.lastIndexOf('\"');
-        return firstLine.substring(first+1,last);
+        return firstLine.substring(first + 1, last);
     }
 
     private int convertToInt(String str) {
-        if(Objects.equals(str, "")) return 0;
+        if (Objects.equals(str, "")) return 0;
         return Integer.parseInt(str);
     }
 
     //finds prefix in str and then returns the part next to it
-    private String findByPrefix(String prefix,String str) {
+    private String findByPrefix(String prefix, String str) {
         StringBuilder result = new StringBuilder();
         int index = str.indexOf(prefix);
-        if(index==-1) return result.toString();
+        if (index == -1) return result.toString();
 
-        index+=prefix.length();
+        index += prefix.length();
         result.append(str.charAt(index));
-        while((index+1 < str.length()) && (str.charAt(index+1)!=' ')){
+        while ((index + 1 < str.length()) && (str.charAt(index + 1) != ' ')) {
             index++;
             result.append(str.charAt(index));
         }
@@ -131,6 +145,14 @@ public class SingleThread {
 
     public void setNid(String nid) {
         this.nid = nid;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public ArrayList<String> getStackTrace() {
