@@ -10,9 +10,15 @@ public class CombinedThreadDump {
     private ArrayList<SingleThreadDump> lisOfSingleThreadDump;
     private HashMap<Integer,ArrayList<String >> infiniteLoopingThreads; // (stack trace)hashId -> list of tid
     private HashMap<Integer,ArrayList<String >> commonWaitingThreads;// (stack trace)hashId -> list of tid
+    private HashMap<Integer,ArrayList<String >> commonBlockedThreads;// (stack trace)hashId -> list of tid
+    private HashMap<Integer,ArrayList<String >> commonTimedWaitingThreads;// (stack trace)hashId -> list of tid
+
     public CombinedThreadDump() {
         this.lisOfSingleThreadDump = new ArrayList<>();
         this.infiniteLoopingThreads = new HashMap<>();
+        this.commonWaitingThreads = new HashMap<>();
+        this.commonBlockedThreads = new HashMap<>();
+        this.commonTimedWaitingThreads = new HashMap<>();
     }
 
     public ArrayList<SingleThreadDump> getLisOfSingleThreadDump() {
@@ -39,6 +45,22 @@ public class CombinedThreadDump {
         this.commonWaitingThreads = commonWaitingThreads;
     }
 
+    public HashMap<Integer, ArrayList<String>> getCommonBlockedThreads() {
+        return commonBlockedThreads;
+    }
+
+    public void setCommonBlockedThreads(HashMap<Integer, ArrayList<String>> commonBlockedThreads) {
+        this.commonBlockedThreads = commonBlockedThreads;
+    }
+
+    public HashMap<Integer, ArrayList<String>> getCommonTimedWaitingThreads() {
+        return commonTimedWaitingThreads;
+    }
+
+    public void setCommonTimedWaitingThreads(HashMap<Integer, ArrayList<String>> commonTimedWaitingThreads) {
+        this.commonTimedWaitingThreads = commonTimedWaitingThreads;
+    }
+
     public void addSingleThreadDump(SingleThreadDump singleThreadDump) {
         this.lisOfSingleThreadDump.add(singleThreadDump);
     }
@@ -52,7 +74,9 @@ public class CombinedThreadDump {
 
     public void analyseCommonStuff() {
         this.infiniteLoopingThreads = getCommonThreadsWithState("RUNNABLE");
-        this.commonWaitingThreads = getCommonThreadsWithState("WAITING");
+        this.commonWaitingThreads =  getCommonThreadsWithState("WAITING");
+        this.commonBlockedThreads = getCommonThreadsWithState("BLOCKED");
+        this.commonTimedWaitingThreads = getCommonThreadsWithState("TIMED_WAITING");
     }
 
     private HashMap<Integer,ArrayList<String>> getCommonThreadsWithState(String state){
@@ -62,15 +86,22 @@ public class CombinedThreadDump {
         SingleThreadDump firstThreadDump = lisOfSingleThreadDump.get(0);
         ArrayList<String> threadsWithGivenStateInFirstDump = firstThreadDump.getStatistics().getThreadType().get(state);
         //Initially set common  thread ids to  thread ids in first dump having given state.
-        ArrayList<String> commonThreadIds = new ArrayList<>(threadsWithGivenStateInFirstDump);
+        ArrayList<String> commonThreadIds = (threadsWithGivenStateInFirstDump!=null)?
+                new ArrayList<>(threadsWithGivenStateInFirstDump)//because constructor cannot be called with null.
+                :new ArrayList<>();
         //Traverse other thread dumps and retain the common thread Ids having same state.
         for(int i = 1;i<lisOfSingleThreadDump.size();i++){
             SingleThreadDump currentThreadDump = lisOfSingleThreadDump.get(i);
-            ArrayList<String> currentRunnableThreadIds =
+            ArrayList<String> currentStateThreadIds =
                     currentThreadDump.getStatistics().getThreadType().get(state);
-            commonThreadIds.retainAll(currentRunnableThreadIds);
+            //NOTE: for using a.retainAll(b) both a and b must be not null.
+            if(currentStateThreadIds==null) currentStateThreadIds = new ArrayList<>();
+            commonThreadIds.retainAll(currentStateThreadIds);
         }
         for( String tid : commonThreadIds){
+            //If Daemon then ignore
+            boolean isDaemon = firstThreadDump.getAllThreads().get(tid).isDaemon();
+            if(isDaemon) continue;
             int hashId = firstThreadDump.getAllThreads().get(tid).getHashId();
             commonThreads.putIfAbsent(hashId,new ArrayList<>());
             commonThreads.get(hashId).add(tid);
