@@ -39,7 +39,6 @@ public class SingleThreadDump {
     private void buildAllThreads(String[] eachDumpData,String regex) {
         Pattern pattern = Pattern.compile(regex);
 
-        ArrayList<SingleThread> result = new ArrayList<>();
         ArrayList<Integer> firstIndexOfThreads = new ArrayList<>();
         for (int i = 0; i < eachDumpData.length; i++) {
             //Start of new thread
@@ -117,12 +116,10 @@ public class SingleThreadDump {
         }
     }
     private int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
-        int hashId = stackTrace.hashCode();
-        return hashId;
+        return stackTrace.hashCode();
     }
     private int getHashIdMethod(String method) {
-        int methodHashId = method.hashCode();
-        return methodHashId;
+        return method.hashCode();
     }
 
     private String getPrefix(String threadName){

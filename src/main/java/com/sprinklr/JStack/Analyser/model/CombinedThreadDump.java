@@ -105,9 +105,6 @@ public class CombinedThreadDump {
             int hashId = firstThreadDump.getAllThreads().get(tid).getHashId();
             commonThreads.putIfAbsent(hashId,new ArrayList<>());
             commonThreads.get(hashId).add(tid);
-//            this.infiniteLoopingThreads.get(hashId).add(firstThreadDump.getAllThreads().get(tid).getName());
-//            ArrayList<String> stackTrace = firstThreadDump.getAllStackTraces().get(hashId);
-//            this.infiniteLoopingThreads.putIfAbsent(hashId,stackTrace);
         }
         return commonThreads;
     }

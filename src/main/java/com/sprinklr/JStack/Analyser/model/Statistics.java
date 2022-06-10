@@ -14,7 +14,6 @@ public class Statistics {
         this.threadType = new HashMap<>();
         this.daemonThreads = new ArrayList<>();
         this.nonDaemonThreads = new ArrayList<>();
-        //TODO: Try other ways of calling processThreads
         processThreads(allThreads);
     }
 

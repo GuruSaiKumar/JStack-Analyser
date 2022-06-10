@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface ThreadDumpService {
     CombinedThreadDump convertToWorkableFormat(String str, String regex);
-    List<CombinedThreadDump> getAllCombinedThreadDumps();
 }

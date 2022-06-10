@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -31,7 +29,7 @@ public class Mycontroller {
     }
 
     @PostMapping(value = "/api")
-    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam(name="regex",defaultValue = ".")Optional<String> regex) {
+    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam(name="regex",defaultValue = ".")String regex) {
         CombinedThreadDump combinedThreadDump = null;
         try {
             String fileName = file.getOriginalFilename();
@@ -51,17 +49,13 @@ public class Mycontroller {
             byte[] finalBytes = Files.readAllBytes(path);
             Files.delete(path);//delete the final txt file
             String str = new String(finalBytes);
-            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str,regex.get());
+            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str,regex);
             System.out.println((combinedThreadDump.toString()));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         System.out.println(combinedThreadDump);
-        return new ResponseEntity<CombinedThreadDump>(combinedThreadDump, HttpStatus.OK);
-    }
-    @GetMapping(value = "/api/all")
-    List<CombinedThreadDump> getAll(){
-        return threadDumpService.getAllCombinedThreadDumps();
+        return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
     }
     private Path unzipFileAt(Path path)throws IOException {
         // Creating a byte array as buffer for reading

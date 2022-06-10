@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Service
 public class ThreadDumpServiceImpl implements ThreadDumpService{
@@ -32,13 +31,9 @@ public class ThreadDumpServiceImpl implements ThreadDumpService{
         //After adding all the singleThreadDumps analyse common props.
         combinedThreadDump.analyseCommonStuff();
 
+        //We are not saving it into database.
 //        combinedThreadDumpRepo.save(combinedThreadDump);
         return combinedThreadDump;
-    }
-
-    @Override
-    public List<CombinedThreadDump> getAllCombinedThreadDumps() {
-        return combinedThreadDumpRepo.findAll();
     }
 
 

@@ -1,7 +1,5 @@
 package com.sprinklr.JStack.Analyser.model;
 
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -34,7 +32,7 @@ public class SingleThread {
     SingleThread(String[] data) {
         int len = data.length;
         String[] stackTraceArray = Arrays.copyOfRange(data, 1, len);
-        this.stackTrace = new ArrayList<String>();
+        this.stackTrace = new ArrayList<>();
         this.stackTrace.addAll(Arrays.asList(stackTraceArray));
 
         String firstLine = data[0];
