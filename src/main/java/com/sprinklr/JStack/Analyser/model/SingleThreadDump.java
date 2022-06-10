@@ -1,9 +1,7 @@
 package com.sprinklr.JStack.Analyser.model;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,8 +13,8 @@ public class SingleThreadDump {
     private HashMap<String,ArrayList<String>> prefMatching;// prefix -> list of tid
     private HashMap<Integer, String> allMethods;//methodHashId -> method(String)
     private HashMap<Integer,ArrayList<String>> methodHashIdToThreadIds;//methodHashId -> list of tid
-
-
+    private Set<String> deadLockedThreadNames;
+    private ArrayList<String> deadLockedThreadIds;
     private Statistics statistics;
 
     SingleThreadDump() {
@@ -30,9 +28,13 @@ public class SingleThreadDump {
         this.prefMatching = new HashMap<>();
         this.allMethods = new HashMap<>();
         this.methodHashIdToThreadIds = new HashMap<>();
+        this.deadLockedThreadNames = new HashSet<>();
+        this.deadLockedThreadIds = new ArrayList<>();
         buildAllThreads(eachDumpData,regex);
         this.statistics = new Statistics(allThreads);
+        processDeadLocks();
     }
+
 
     private void buildAllThreads(String[] eachDumpData,String regex) {
         Pattern pattern = Pattern.compile(regex);
@@ -52,13 +54,21 @@ public class SingleThreadDump {
             String[] currentThreadData = Arrays.copyOfRange(eachDumpData, startIndex, lastIndex);
 
             SingleThread currentThread = new SingleThread(currentThreadData);
+            String threadId = currentThread.tid;
+
+            //Checking is this thread belongs to deadlock in thread Dump.
+            //Every thread has threadId except from the deadlock part
+            if(threadId.equals("")){
+                String curThreadName = currentThread.getName();
+                deadLockedThreadNames.add(curThreadName);
+                continue;//Do not process for further computation since it is already been done for this thread
+            }
             //Checking the regex part
             String curThreadName = currentThread.getName();
             Matcher matcher = pattern.matcher(curThreadName);
             if(!matcher.find()) continue;
 
             ArrayList<String> currentStackTrace = currentThread.getStackTrace();
-            String threadId = currentThread.tid;
             int hashId = getHashIdOfStackTrace(currentStackTrace);
 
             currentThread.setHashId(hashId);
@@ -93,6 +103,19 @@ public class SingleThreadDump {
         }
     }
 
+
+    private void processDeadLocks() {
+        //All the deadlocked threads will be BLOCKED state
+        ArrayList<String> blocked = statistics.getThreadType().get("BLOCKED");
+        if(blocked!=null){
+            for( String curThreadId : blocked){
+                String curThreadName = allThreads.get(curThreadId).getName();
+                if(deadLockedThreadNames.contains(curThreadName)){
+                    deadLockedThreadIds.add(curThreadId);
+                }
+            }
+        }
+    }
     private int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
         int hashId = stackTrace.hashCode();
         return hashId;
@@ -177,5 +200,21 @@ public class SingleThreadDump {
 
     public void setMethodHashIdToThreadIds(HashMap<Integer, ArrayList<String>> methodHashIdToThreadIds) {
         this.methodHashIdToThreadIds = methodHashIdToThreadIds;
+    }
+
+    public Set<String> getDeadLockedThreadNames() {
+        return deadLockedThreadNames;
+    }
+
+    public void setDeadLockedThreadNames(Set<String> deadLockedThreadNames) {
+        this.deadLockedThreadNames = deadLockedThreadNames;
+    }
+
+    public ArrayList<String> getDeadLockedThreadIds() {
+        return deadLockedThreadIds;
+    }
+
+    public void setDeadLockedThreadIds(ArrayList<String> deadLockedThreadIds) {
+        this.deadLockedThreadIds = deadLockedThreadIds;
     }
 }
