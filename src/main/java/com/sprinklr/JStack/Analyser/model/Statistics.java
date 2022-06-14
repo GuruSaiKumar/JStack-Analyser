@@ -10,6 +10,11 @@ public class Statistics {
     private  ArrayList<String> daemonThreads;//list of tid
     private  ArrayList<String> nonDaemonThreads;//list of tid
 
+    Statistics(){
+        this.threadType = new HashMap<>();
+        this.daemonThreads = new ArrayList<>();
+        this.nonDaemonThreads = new ArrayList<>();
+    }
     Statistics(HashMap<String,SingleThread> allThreads){
         this.threadType = new HashMap<>();
         this.daemonThreads = new ArrayList<>();

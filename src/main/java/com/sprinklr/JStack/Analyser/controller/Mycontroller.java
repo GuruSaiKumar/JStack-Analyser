@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,7 +30,9 @@ public class Mycontroller {
     }
 
     @PostMapping(value = "/api")
-    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam(name="regex",defaultValue = ".")String regex) {
+    public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file,
+                                                         @RequestParam(name="regex",defaultValue = ".")String regex,
+                                                         @RequestParam(name="params",defaultValue = "all") List<String> params) {
         CombinedThreadDump combinedThreadDump = null;
         try {
             String fileName = file.getOriginalFilename();
@@ -54,7 +57,7 @@ public class Mycontroller {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(combinedThreadDump);
+        combinedThreadDump = this.threadDumpService.editOutputUsingParams(combinedThreadDump,params);
         return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
     }
     private Path unzipFileAt(Path path)throws IOException {

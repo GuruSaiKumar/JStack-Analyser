@@ -15,9 +15,21 @@ public class SingleThreadDump {
     private HashMap<Integer,ArrayList<String>> methodHashIdToThreadIds;//methodHashId -> list of tid
     private Set<String> deadLockedThreadNames;
     private ArrayList<String> deadLockedThreadIds;
+    private HashMap<String,ArrayList<String >> mapStackTraceLength;// groupByLen -> list of tids.
     private Statistics statistics;
 
-    SingleThreadDump() {
+    public SingleThreadDump() {
+        this.name = "";
+        this.allThreads = new HashMap<>();
+        this.allStackTraces = new HashMap<>();
+        this.hashIdToThreadIds = new HashMap<>();
+        this.prefMatching = new HashMap<>();
+        this.allMethods = new HashMap<>();
+        this.methodHashIdToThreadIds = new HashMap<>();
+        this.deadLockedThreadNames = new HashSet<>();
+        this.deadLockedThreadIds = new ArrayList<>();
+        this.mapStackTraceLength = new HashMap<>();
+        this.statistics = new Statistics();
     }
 
     public SingleThreadDump(String[] eachDumpData, String regex) {
@@ -30,9 +42,18 @@ public class SingleThreadDump {
         this.methodHashIdToThreadIds = new HashMap<>();
         this.deadLockedThreadNames = new HashSet<>();
         this.deadLockedThreadIds = new ArrayList<>();
+        this.mapStackTraceLength = initialiseMapStackTraceLen();
         buildAllThreads(eachDumpData,regex);
         this.statistics = new Statistics(allThreads);
         processDeadLocks();
+    }
+
+    private HashMap<String, ArrayList<String>> initialiseMapStackTraceLen() {
+        HashMap<String, ArrayList<String>> result = new HashMap<>();
+        result.put("Below10",new ArrayList<>());
+        result.put("Below100",new ArrayList<>());
+        result.put("Above100", new ArrayList<>());
+        return result;
     }
 
 
@@ -99,6 +120,19 @@ public class SingleThreadDump {
                 methodHashIdToThreadIds.putIfAbsent(methodHash,new ArrayList<>());
                 methodHashIdToThreadIds.get(methodHash).add(threadId);
             }
+
+            //For mapping stackTraces according to their length
+            int currentStackTraceLen = currentStackTrace.size();
+            String group = "";
+            if(currentStackTraceLen<=10){
+                group = "Below10";
+            }else if(currentStackTraceLen<=100) {
+                group = "Below100";
+            }else{
+                group = "Above100";
+            }
+            mapStackTraceLength.get(group).add(threadId);
+
         }
     }
 
@@ -213,5 +247,13 @@ public class SingleThreadDump {
 
     public void setDeadLockedThreadIds(ArrayList<String> deadLockedThreadIds) {
         this.deadLockedThreadIds = deadLockedThreadIds;
+    }
+
+    public HashMap<String, ArrayList<String>> getMapStackTraceLength() {
+        return mapStackTraceLength;
+    }
+
+    public void setMapStackTraceLength(HashMap<String, ArrayList<String>> mapStackTraceLength) {
+        this.mapStackTraceLength = mapStackTraceLength;
     }
 }

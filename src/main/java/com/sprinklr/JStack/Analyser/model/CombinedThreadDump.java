@@ -86,9 +86,10 @@ public class CombinedThreadDump {
         SingleThreadDump firstThreadDump = lisOfSingleThreadDump.get(0);
         ArrayList<String> threadsWithGivenStateInFirstDump = firstThreadDump.getStatistics().getThreadType().get(state);
         //Initially set common  thread ids to  thread ids in first dump having given state.
-        ArrayList<String> commonThreadIds = (threadsWithGivenStateInFirstDump!=null)?
-                new ArrayList<>(threadsWithGivenStateInFirstDump)//because constructor cannot be called with null.
-                :new ArrayList<>();
+        ArrayList<String> commonThreadIds = new ArrayList<>();
+        if(threadsWithGivenStateInFirstDump!=null){
+            commonThreadIds.addAll(threadsWithGivenStateInFirstDump);
+        }
         //Traverse other thread dumps and retain the common thread Ids having same state.
         for(int i = 1;i<lisOfSingleThreadDump.size();i++){
             SingleThreadDump currentThreadDump = lisOfSingleThreadDump.get(i);

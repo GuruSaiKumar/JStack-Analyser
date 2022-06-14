@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class ThreadDumpServiceImpl implements ThreadDumpService{
@@ -36,6 +37,56 @@ public class ThreadDumpServiceImpl implements ThreadDumpService{
         return combinedThreadDump;
     }
 
+    @Override
+    public CombinedThreadDump editOutputUsingParams(CombinedThreadDump originalResult, List<String> params) {
+        if(params.contains("all")) return originalResult;
+        CombinedThreadDump editedResult = new CombinedThreadDump();
+        editOutputOfCombinedDumps(originalResult,editedResult,params);
+        editOutputOfSingDumps(originalResult,editedResult,params);
+        return editedResult;
+    }
+
+    private void editOutputOfCombinedDumps(CombinedThreadDump originalResult, CombinedThreadDump editedResult, List<String> params){
+        if(params.contains("infiniteLoopingThreads"))
+            editedResult.setInfiniteLoopingThreads(originalResult.getInfiniteLoopingThreads());
+        if(params.contains("commonWaitingThreads"))
+            editedResult.setCommonWaitingThreads(originalResult.getCommonWaitingThreads());
+        if(params.contains("commonBlockedThreads"))
+            editedResult.setCommonBlockedThreads(originalResult.getCommonBlockedThreads());
+        if(params.contains("commonTimedWaitingThreads"))
+            editedResult.setCommonTimedWaitingThreads(originalResult.getCommonTimedWaitingThreads());
+    }
+    private void editOutputOfSingDumps(CombinedThreadDump originalResult, CombinedThreadDump editedResult, List<String> params) {
+        //Initialise the List of single dump
+        ArrayList<SingleThreadDump> editedListOfAllSingleDump = new ArrayList<>();
+        for( SingleThreadDump curOriginalDump : originalResult.getLisOfSingleThreadDump()){
+            SingleThreadDump curEditedDump = new SingleThreadDump();
+            if(params.contains("allThreads"))
+                curEditedDump.setAllThreads(curOriginalDump.getAllThreads());
+            if(params.contains("allStackTraces"))
+                curEditedDump.setAllStackTraces(curOriginalDump.getAllStackTraces());
+            if(params.contains("hashIdToThreadIds"))
+                curEditedDump.setHashIdToThreadIds(curOriginalDump.getHashIdToThreadIds());
+            if(params.contains("prefMatching"))
+                curEditedDump.setPrefMatching(curOriginalDump.getPrefMatching());
+            if(params.contains("allMethods"))
+                curEditedDump.setAllMethods(curOriginalDump.getAllMethods());
+            if(params.contains("methodHashIdToThreadIds"))
+                curEditedDump.setMethodHashIdToThreadIds(curOriginalDump.getMethodHashIdToThreadIds());
+            if(params.contains("deadLockedThreadNames"))
+                curEditedDump.setDeadLockedThreadNames(curOriginalDump.getDeadLockedThreadNames());
+            if(params.contains("deadLockedThreadIds"))
+                curEditedDump.setDeadLockedThreadIds(curOriginalDump.getDeadLockedThreadIds());
+            if(params.contains("mapStackTraceLength"))
+                curEditedDump.setMapStackTraceLength(curOriginalDump.getMapStackTraceLength());
+            if(params.contains("statistics"))
+                curEditedDump.setStatistics(curOriginalDump.getStatistics());
+
+            editedListOfAllSingleDump.add(curEditedDump);
+        }
+        editedResult.setLisOfSingleThreadDump(editedListOfAllSingleDump);
+    }
+
 
     //HELPER FUNCTIONS
 
@@ -56,4 +107,6 @@ public class ThreadDumpServiceImpl implements ThreadDumpService{
         }
         return allDumps;
     }
+
+
 }

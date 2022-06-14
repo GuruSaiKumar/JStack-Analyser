@@ -30,8 +30,9 @@ public class SingleThread {
     }
 
     SingleThread(String[] data) {
-        int len = data.length;
-        String[] stackTraceArray = Arrays.copyOfRange(data, 1, len);
+        int lastIndexOfThread = data.length;
+        if(data[1].length()==0) lastIndexOfThread = 2;//This case occurs at last thread.
+        String[] stackTraceArray = Arrays.copyOfRange(data, 1, lastIndexOfThread);
         this.stackTrace = new ArrayList<>();
         this.stackTrace.addAll(Arrays.asList(stackTraceArray));
 
