@@ -24,6 +24,7 @@ import java.util.zip.ZipInputStream;
 public class Mycontroller {
     @Autowired
     private ThreadDumpService threadDumpService;
+
     @GetMapping(value = "/api")
     String getHome() {
         return "Server is UP! ";
@@ -31,9 +32,18 @@ public class Mycontroller {
 
     @PostMapping(value = "/api")
     public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file,
-                                                         @RequestParam(name="regex",defaultValue = ".")String regex,
-                                                         @RequestParam(name="params",defaultValue = "all") List<String> params) {
+                                                         @RequestParam(name = "regex", defaultValue = ".") String regex,
+                                                         @RequestParam(name = "params", defaultValue = "all") List<String> params) {
         CombinedThreadDump combinedThreadDump = null;
+        String fileData = getFileDataAsString(file);
+        combinedThreadDump = this.threadDumpService.convertToWorkableFormat(fileData, regex);
+        if (combinedThreadDump != null)
+            combinedThreadDump = this.threadDumpService.editOutputUsingParams(combinedThreadDump, params);
+        return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
+    }
+
+    private String getFileDataAsString(MultipartFile file) {
+        String fileData = "";
         try {
             String fileName = file.getOriginalFilename();
             byte[] bytes = file.getBytes();
@@ -51,16 +61,15 @@ public class Mycontroller {
 
             byte[] finalBytes = Files.readAllBytes(path);
             Files.delete(path);//delete the final txt file
-            String str = new String(finalBytes);
-            combinedThreadDump = this.threadDumpService.convertToWorkableFormat(str,regex);
-            System.out.println((combinedThreadDump.toString()));
+            fileData = new String(finalBytes);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        combinedThreadDump = this.threadDumpService.editOutputUsingParams(combinedThreadDump,params);
-        return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
+        return fileData;
     }
-    private Path unzipFileAt(Path path)throws IOException {
+
+    //Unzips the file at given path , deletes zip file , returns path od new unzipped file
+    private Path unzipFileAt(Path path) throws IOException {
         // Creating a byte array as buffer for reading
         byte[] buffer = new byte[1024];
         Path finalPath = null;//path of unzipped file

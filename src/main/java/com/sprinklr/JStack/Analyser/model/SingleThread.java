@@ -26,12 +26,11 @@ public class SingleThread {
 
     //Default constructor is required for bean to initialise
     SingleThread() {
-
     }
 
     SingleThread(String[] data) {
         int lastIndexOfThread = data.length;
-        if(data[1].length()==0) lastIndexOfThread = 2;//This case occurs at last thread.
+        if (data[1].length() == 0) lastIndexOfThread = 2;//This case occurs at last thread.
         String[] stackTraceArray = Arrays.copyOfRange(data, 1, lastIndexOfThread);
         this.stackTrace = new ArrayList<>();
         this.stackTrace.addAll(Arrays.asList(stackTraceArray));
