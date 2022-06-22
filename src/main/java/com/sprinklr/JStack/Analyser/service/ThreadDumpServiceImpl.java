@@ -3,6 +3,8 @@ package com.sprinklr.JStack.Analyser.service;
 import com.sprinklr.JStack.Analyser.model.CombinedThreadDump;
 import com.sprinklr.JStack.Analyser.model.SingleThreadDump;
 import com.sprinklr.JStack.Analyser.repositaries.CombinedThreadDumpRepo;
+import com.sprinklr.JStack.Analyser.utils.CombinedThreadDumpUtil;
+import com.sprinklr.JStack.Analyser.utils.SingleThreadDumpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +28,16 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         ArrayList<String[]> allDumpsData = getAllDumpsData(lines);
 
         CombinedThreadDump combinedThreadDump = new CombinedThreadDump();
+        CombinedThreadDumpUtil combinedThreadDumpUtil = new CombinedThreadDumpUtil(combinedThreadDump);
         for (String[] eachDumpData : allDumpsData) {
-            SingleThreadDump singleThreadDump = new SingleThreadDump(eachDumpData, regex);
-            combinedThreadDump.addSingleThreadDump(singleThreadDump);
+            SingleThreadDump singleThreadDump = new SingleThreadDump();
+            //Instead of processing everything in model we do computation in Util classes
+            SingleThreadDumpUtil singleThreadDumpUtil = new SingleThreadDumpUtil(singleThreadDump);
+            singleThreadDumpUtil.buildSingleThreadDump(eachDumpData,regex);
+            combinedThreadDumpUtil.addSingleThreadDump(singleThreadDump);
         }
         //After adding all the singleThreadDumps analyse common props.
-        combinedThreadDump.analyseCommonStuff();
-
+            combinedThreadDumpUtil.analyseCommonStuff();
         //We are not saving it into database.
 //        combinedThreadDumpRepo.save(combinedThreadDump);
         return combinedThreadDump;
