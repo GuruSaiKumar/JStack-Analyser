@@ -28,16 +28,14 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         ArrayList<String[]> allDumpsData = getAllDumpsData(lines);
 
         CombinedThreadDump combinedThreadDump = new CombinedThreadDump();
-        CombinedThreadDumpUtil combinedThreadDumpUtil = new CombinedThreadDumpUtil(combinedThreadDump);
         for (String[] eachDumpData : allDumpsData) {
             SingleThreadDump singleThreadDump = new SingleThreadDump();
             //Instead of processing everything in model we do computation in Util classes
-            SingleThreadDumpUtil singleThreadDumpUtil = new SingleThreadDumpUtil(singleThreadDump);
-            singleThreadDumpUtil.buildSingleThreadDump(eachDumpData,regex);
-            combinedThreadDumpUtil.addSingleThreadDump(singleThreadDump);
+            SingleThreadDumpUtil.buildSingleThreadDump(singleThreadDump,eachDumpData,regex);
+            CombinedThreadDumpUtil.addSingleThreadDump(combinedThreadDump,singleThreadDump);
         }
         //After adding all the singleThreadDumps analyse common props.
-            combinedThreadDumpUtil.analyseCommonStuff();
+            CombinedThreadDumpUtil.analyseCommonStuff(combinedThreadDump);
         //We are not saving it into database.
 //        combinedThreadDumpRepo.save(combinedThreadDump);
         return combinedThreadDump;

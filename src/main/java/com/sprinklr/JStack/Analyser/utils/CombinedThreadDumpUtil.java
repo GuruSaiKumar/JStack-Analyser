@@ -7,20 +7,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CombinedThreadDumpUtil {
-    private final CombinedThreadDump combinedThreadDump;
 
-    public CombinedThreadDumpUtil(CombinedThreadDump combinedThreadDump) {
-        this.combinedThreadDump = combinedThreadDump;
+    public CombinedThreadDumpUtil() {
     }
 
-    public void analyseCommonStuff() {
-        combinedThreadDump.setInfiniteLoopingThreads(getCommonThreadsWithState("RUNNABLE"));
-        combinedThreadDump.setCommonWaitingThreads(getCommonThreadsWithState("WAITING"));
-        combinedThreadDump.setCommonBlockedThreads(getCommonThreadsWithState("BLOCKED"));
-        combinedThreadDump.setCommonTimedWaitingThreads(getCommonThreadsWithState("TIMED_WAITING"));
+    public static void analyseCommonStuff(CombinedThreadDump combinedThreadDump) {
+        combinedThreadDump.setInfiniteLoopingThreads(getCommonThreadsWithState(combinedThreadDump, "RUNNABLE"));
+        combinedThreadDump.setCommonWaitingThreads(getCommonThreadsWithState(combinedThreadDump, "WAITING"));
+        combinedThreadDump.setCommonBlockedThreads(getCommonThreadsWithState(combinedThreadDump, "BLOCKED"));
+        combinedThreadDump.setCommonTimedWaitingThreads(getCommonThreadsWithState(combinedThreadDump, "TIMED_WAITING"));
     }
 
-    private HashMap<Integer, ArrayList<String>> getCommonThreadsWithState(String state) {
+    private static HashMap<Integer, ArrayList<String>> getCommonThreadsWithState(CombinedThreadDump combinedThreadDump, String state) {
         //Final result StackTraceHashId -> (list of tid)
         HashMap<Integer, ArrayList<String>> commonThreads = new HashMap<>();
         ArrayList<SingleThreadDump> lisOfSingleThreadDump = combinedThreadDump.getLisOfSingleThreadDump();
@@ -50,7 +48,7 @@ public class CombinedThreadDumpUtil {
         return commonThreads;
     }
 
-    public void addSingleThreadDump(SingleThreadDump singleThreadDump) {
+    public static void addSingleThreadDump(CombinedThreadDump combinedThreadDump, SingleThreadDump singleThreadDump) {
         combinedThreadDump.getLisOfSingleThreadDump().add(singleThreadDump);
     }
 }

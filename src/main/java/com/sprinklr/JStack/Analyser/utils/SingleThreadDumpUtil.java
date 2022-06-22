@@ -11,24 +11,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SingleThreadDumpUtil {
-    private final SingleThreadDump singleThreadDump;
 
-    public SingleThreadDumpUtil(SingleThreadDump singleThreadDump) {
-        this.singleThreadDump = singleThreadDump;
+    public SingleThreadDumpUtil() {
     }
 
-    public void buildSingleThreadDump(String[] eachDumpData, String regex) {
+    public static void buildSingleThreadDump(SingleThreadDump singleThreadDump, String[] eachDumpData, String regex) {
         singleThreadDump.setName(eachDumpData[0] + '\n' + eachDumpData[1]);
         singleThreadDump.setMapStackTraceLength(initialiseMapStackTraceLen());
-        buildAllThreads(eachDumpData, regex);
+        buildAllThreads(singleThreadDump, eachDumpData, regex);
         Statistics statistics = new Statistics();
-        StatisticsUtil statisticsUtil = new StatisticsUtil(statistics);
-        statisticsUtil.buildStatistics(singleThreadDump.getAllThreads());
-        this.singleThreadDump.setStatistics(statistics);
-        processDeadLocks();
+        StatisticsUtil.buildStatistics(statistics, singleThreadDump.getAllThreads());
+        singleThreadDump.setStatistics(statistics);
+        processDeadLocks(singleThreadDump);
     }
 
-    private HashMap<String, ArrayList<String>> initialiseMapStackTraceLen() {
+    private static HashMap<String, ArrayList<String>> initialiseMapStackTraceLen() {
         HashMap<String, ArrayList<String>> result = new HashMap<>();
         result.put("Below10", new ArrayList<>());
         result.put("Below100", new ArrayList<>());
@@ -37,7 +34,7 @@ public class SingleThreadDumpUtil {
     }
 
 
-    private void buildAllThreads(String[] eachDumpData, String regex) {
+    private static void buildAllThreads(SingleThreadDump singleThreadDump, String[] eachDumpData, String regex) {
         Pattern pattern = Pattern.compile(regex);
 
         ArrayList<Integer> firstIndexOfThreads = getStartingIndexOfAllThreads(eachDumpData);
@@ -46,7 +43,7 @@ public class SingleThreadDumpUtil {
             String threadId = currentThread.getTid();
 
             //Checking if this thread belongs to deadlock in thread Dump.
-            if (checkIfBelongsToDeadLock(currentThread, threadId))
+            if (checkIfBelongsToDeadLock(singleThreadDump, currentThread, threadId))
                 continue;//Do not process for further computation since it is already been done for this thread
             //Checking the regex part
             if (checkRegexPart(pattern, currentThread)) continue;
@@ -58,18 +55,18 @@ public class SingleThreadDumpUtil {
             currentThread.setStackTrace(null);//We don't need it anymore
 
             singleThreadDump.getAllThreads().put(threadId, currentThread);
-            analyseCurrentStackTrace(threadId, currentStackTrace, hashId);
+            analyseCurrentStackTrace(singleThreadDump, threadId, currentStackTrace, hashId);
             //prefix matching
-            doPrefixMatching(currentThread, threadId);
+            doPrefixMatching(singleThreadDump, currentThread, threadId);
             //For getting most used method.
-            checkCurrentMethod(currentThread, threadId);
+            checkCurrentMethod(singleThreadDump, currentThread, threadId);
             //For mapping stackTraces according to their length
-            checkLengthOfStackTrace(threadId, currentStackTrace);
+            checkLengthOfStackTrace(singleThreadDump, threadId, currentStackTrace);
 
         }
     }
 
-    private ArrayList<Integer> getStartingIndexOfAllThreads(String[] eachDumpData) {
+    private static ArrayList<Integer> getStartingIndexOfAllThreads(String[] eachDumpData) {
         ArrayList<Integer> firstIndexOfThreads = new ArrayList<>();
         for (int i = 0; i < eachDumpData.length; i++) {
             //Start of new thread
@@ -78,25 +75,24 @@ public class SingleThreadDumpUtil {
         return firstIndexOfThreads;
     }
 
-    private SingleThread getSingleThreadAtIndex(String[] eachDumpData, ArrayList<Integer> firstIndexOfThreads, int i) {
+    private static SingleThread getSingleThreadAtIndex(String[] eachDumpData, ArrayList<Integer> firstIndexOfThreads, int i) {
         int startIndex = firstIndexOfThreads.get(i);
         int lastIndex = startIndex + 2;//adding 2 here since we access second line in SingleThread Constructor
         if (i + 1 < firstIndexOfThreads.size()) lastIndex = firstIndexOfThreads.get(i + 1);
         String[] currentThreadData = Arrays.copyOfRange(eachDumpData, startIndex, lastIndex);
 
         SingleThread singleThread = new SingleThread();
-        SingleThreadUtil singleThreadUtil = new SingleThreadUtil(singleThread);
-        singleThreadUtil.buildSingleThread(currentThreadData);
+        SingleThreadUtil.buildSingleThread(singleThread, currentThreadData);
         return singleThread;
     }
 
-    private void analyseCurrentStackTrace(String threadId, ArrayList<String> currentStackTrace, int hashId) {
+    private static void analyseCurrentStackTrace(SingleThreadDump singleThreadDump, String threadId, ArrayList<String> currentStackTrace, int hashId) {
         singleThreadDump.getAllStackTraces().putIfAbsent(hashId, currentStackTrace);
         singleThreadDump.getHashIdToThreadIds().putIfAbsent(hashId, new ArrayList<>());
         singleThreadDump.getHashIdToThreadIds().get(hashId).add(threadId);
     }
 
-    private boolean checkIfBelongsToDeadLock(SingleThread currentThread, String threadId) {
+    private static boolean checkIfBelongsToDeadLock(SingleThreadDump singleThreadDump, SingleThread currentThread, String threadId) {
         //Every thread has threadId except from the deadlock part
         if (threadId.equals("")) {
             String curThreadName = currentThread.getName();
@@ -106,13 +102,13 @@ public class SingleThreadDumpUtil {
         return false;
     }
 
-    private boolean checkRegexPart(Pattern pattern, SingleThread currentThread) {
+    private static boolean checkRegexPart(Pattern pattern, SingleThread currentThread) {
         String curThreadName = currentThread.getName();
         Matcher matcher = pattern.matcher(curThreadName);
         return !matcher.find();
     }
 
-    private void checkLengthOfStackTrace(String threadId, ArrayList<String> currentStackTrace) {
+    private static void checkLengthOfStackTrace(SingleThreadDump singleThreadDump, String threadId, ArrayList<String> currentStackTrace) {
         int currentStackTraceLen = currentStackTrace.size();
         String group;
         if (currentStackTraceLen <= 10) {
@@ -125,7 +121,7 @@ public class SingleThreadDumpUtil {
         singleThreadDump.getMapStackTraceLength().get(group).add(threadId);
     }
 
-    private void checkCurrentMethod(SingleThread currentThread, String threadId) {
+    private static void checkCurrentMethod(SingleThreadDump singleThreadDump, SingleThread currentThread, String threadId) {
         String curMethod = currentThread.getMethod();
         if (curMethod.length() > 0) {
             int methodHash = getHashIdMethod(curMethod);
@@ -135,7 +131,7 @@ public class SingleThreadDumpUtil {
         }
     }
 
-    private void doPrefixMatching(SingleThread currentThread, String threadId) {
+    private static void doPrefixMatching(SingleThreadDump singleThreadDump, SingleThread currentThread, String threadId) {
         String prefix = getPrefix(currentThread.getName());
         if (prefix != null) {
             //Key of hashMap cannot contain '.'
@@ -150,7 +146,7 @@ public class SingleThreadDumpUtil {
     }
 
 
-    private void processDeadLocks() {
+    private static void processDeadLocks(SingleThreadDump singleThreadDump) {
         //All the deadlocked threads will be BLOCKED state
         ArrayList<String> blocked = singleThreadDump.getStatistics().getThreadType().get("BLOCKED");
         if (blocked != null) {
@@ -163,15 +159,15 @@ public class SingleThreadDumpUtil {
         }
     }
 
-    private int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
+    private static int getHashIdOfStackTrace(ArrayList<String> stackTrace) {
         return stackTrace.hashCode();
     }
 
-    private int getHashIdMethod(String method) {
+    private static int getHashIdMethod(String method) {
         return method.hashCode();
     }
 
-    private String getPrefix(String threadName) {
+    private static String getPrefix(String threadName) {
         int index = threadName.indexOf('-');
         if (index != -1) {
             return threadName.substring(0, index);

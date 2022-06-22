@@ -7,13 +7,11 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class SingleThreadUtil {
-    private final SingleThread singleThread;
 
-    public SingleThreadUtil(SingleThread singleThread) {
-        this.singleThread = singleThread;
+    public SingleThreadUtil() {
     }
 
-    public void buildSingleThread(String[] data) {
+    public static void buildSingleThread(SingleThread singleThread, String[] data) {
         int lastIndexOfThread = data.length;
         if (data[1].length() == 0) lastIndexOfThread = 2;//This case occurs at last thread.
         String[] stackTraceArray = Arrays.copyOfRange(data, 1, lastIndexOfThread);
@@ -21,22 +19,22 @@ public class SingleThreadUtil {
         singleThread.getStackTrace().addAll(Arrays.asList(stackTraceArray));
 
         String firstLine = data[0];
-        singleThread.setName(getThreadName(firstLine));
+        singleThread.setName(getThreadName(singleThread, firstLine));
 
         singleThread.setDaemon(firstLine.contains("daemon"));
-        singleThread.setTid(findByPrefix("tid=", firstLine));
-        singleThread.setNid(findByPrefix("nid=", firstLine));
-        singleThread.setPriority(convertToInt(findByPrefix(" prio=", firstLine)));
-        singleThread.setOs_priority(convertToInt(findByPrefix("os_prio=", firstLine)));
+        singleThread.setTid(findByPrefix(singleThread, "tid=", firstLine));
+        singleThread.setNid(findByPrefix(singleThread, "nid=", firstLine));
+        singleThread.setPriority(convertToInt(singleThread, findByPrefix(singleThread, " prio=", firstLine)));
+        singleThread.setOs_priority(convertToInt(singleThread, findByPrefix(singleThread, "os_prio=", firstLine)));
 
         String secondLine = data[1];//It is guaranteed to have at least 2 lines
-        singleThread.setState(findByPrefix("java.lang.Thread.State: ", secondLine));
+        singleThread.setState(findByPrefix(singleThread, "java.lang.Thread.State: ", secondLine));
         singleThread.setHashId(-1);
 
-        singleThread.setMethod(getMethodName());
+        singleThread.setMethod(getMethodName(singleThread));
     }
 
-    private String getMethodName() {
+    private static String getMethodName(SingleThread singleThread) {
         String result = "";
         //Method Exists if it has second line and is nonempty.
         if (singleThread.getStackTrace().size() >= 2 && singleThread.getStackTrace().get(1).length() > 0) {
@@ -47,19 +45,19 @@ public class SingleThreadUtil {
         return result;
     }
 
-    private String getThreadName(String firstLine) {
+    private static String getThreadName(SingleThread singleThread, String firstLine) {
         int first = firstLine.indexOf('\"');
         int last = firstLine.lastIndexOf('\"');
         return firstLine.substring(first + 1, last);
     }
 
-    private int convertToInt(String str) {
+    private static int convertToInt(SingleThread singleThread, String str) {
         if (Objects.equals(str, "")) return 0;
         return Integer.parseInt(str);
     }
 
     //finds prefix in str and then returns the part next to it
-    private String findByPrefix(String prefix, String str) {
+    private static String findByPrefix(SingleThread singleThread, String prefix, String str) {
         StringBuilder result = new StringBuilder();
         int index = str.indexOf(prefix);
         if (index == -1) return result.toString();

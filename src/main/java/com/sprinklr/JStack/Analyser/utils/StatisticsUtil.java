@@ -9,20 +9,18 @@ import java.util.Map;
 import java.util.Objects;
 
 public class StatisticsUtil {
-    private Statistics statistics;
 
-    public StatisticsUtil(Statistics statistics) {
-        this.statistics = statistics;
+    public StatisticsUtil() {
     }
 
-    public void buildStatistics(HashMap<String, SingleThread> allThreads) {
+    public static void buildStatistics(Statistics statistics, HashMap<String, SingleThread> allThreads) {
         statistics.setThreadType(new HashMap<>());
         statistics.setDaemonThreads(new ArrayList<>());
         statistics.setNonDaemonThreads(new ArrayList<>());
-        processThreads(allThreads);
+        processThreads(statistics, allThreads);
     }
 
-    public void processThreads(HashMap<String, SingleThread> allThreads) {
+    public static void processThreads(Statistics statistics, HashMap<String, SingleThread> allThreads) {
         for (Map.Entry<String, SingleThread> entry : allThreads.entrySet()) {
             String threadId = entry.getKey();
             SingleThread curThread = entry.getValue();
