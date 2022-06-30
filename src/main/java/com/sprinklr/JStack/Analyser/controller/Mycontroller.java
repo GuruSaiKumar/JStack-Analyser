@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,16 +31,23 @@ public class Mycontroller {
         return "Server is UP! ";
     }
 
+    @CrossOrigin
     @PostMapping(value = "/api")
     public ResponseEntity<CombinedThreadDump> uploadFile(@RequestPart("file") MultipartFile file,
                                                          @RequestParam(name = "regex", defaultValue = ".") String regex,
-                                                         @RequestParam(name = "params", defaultValue = "all") List<String> params) {
+                                                         @RequestParam(name = "params", defaultValue = "all") List<String> params,
+                                                         @RequestParam(name = "saveToDb", defaultValue = "false") String saveToDb) {
         CombinedThreadDump combinedThreadDump = null;
         String fileData = getFileDataAsString(file);
-        combinedThreadDump = this.threadDumpService.convertToWorkableFormat(fileData, regex);
+        combinedThreadDump = this.threadDumpService.convertToWorkableFormat(fileData, regex,saveToDb);
         if (combinedThreadDump != null)
             combinedThreadDump = this.threadDumpService.editOutputUsingParams(combinedThreadDump, params);
         return new ResponseEntity<>(combinedThreadDump, HttpStatus.OK);
+    }
+    @CrossOrigin
+    @GetMapping(value = "/api/{id}")
+    public Optional<CombinedThreadDump> getFromDb(@PathVariable String id){
+        return this.threadDumpService.getCombinedThreadDump(id);
     }
 
     private String getFileDataAsString(MultipartFile file) {

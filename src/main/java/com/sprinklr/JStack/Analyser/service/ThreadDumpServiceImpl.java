@@ -8,9 +8,7 @@ import com.sprinklr.JStack.Analyser.utils.SingleThreadDumpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ThreadDumpServiceImpl implements ThreadDumpService {
@@ -23,7 +21,7 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
     }
 
     @Override
-    public CombinedThreadDump convertToWorkableFormat(String str, String regex) {
+    public CombinedThreadDump convertToWorkableFormat(String str, String regex, String saveToDb) {
         String[] lines = str.split("\\r?\\n");
         ArrayList<String[]> allDumpsData = getAllDumpsData(lines);
 
@@ -37,8 +35,15 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         //After adding all the singleThreadDumps analyse common props.
             CombinedThreadDumpUtil.analyseCommonStuff(combinedThreadDump);
         //We are not saving it into database.
-//        combinedThreadDumpRepo.save(combinedThreadDump);
+        if(Objects.equals(saveToDb, "true")) {
+            combinedThreadDumpRepo.save(combinedThreadDump);
+        }
         return combinedThreadDump;
+    }
+
+    @Override
+    public Optional<CombinedThreadDump> getCombinedThreadDump(String id) {
+        return combinedThreadDumpRepo.findById(id);
     }
 
     @Override

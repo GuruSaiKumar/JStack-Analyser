@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CombinedThreadDumpRepo extends MongoRepository<CombinedThreadDump,Long> {
+public interface CombinedThreadDumpRepo extends MongoRepository<CombinedThreadDump,String> {
 }
