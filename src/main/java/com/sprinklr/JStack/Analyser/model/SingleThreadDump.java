@@ -1,9 +1,14 @@
 package com.sprinklr.JStack.Analyser.model;
 
 
-import java.util.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.*;
+@Document(collection = "SingleThreadDump")
 public class SingleThreadDump {
+    @Id
+    private String id;
     private String name;
     private HashMap<String, SingleThread> allThreads;// tid -> singleThread
     private HashMap<Integer, ArrayList<String>> allStackTraces;//hashId -> StackTrace
@@ -116,5 +121,13 @@ public class SingleThreadDump {
 
     public void setMapStackTraceLength(HashMap<String, ArrayList<String>> mapStackTraceLength) {
         this.mapStackTraceLength = mapStackTraceLength;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

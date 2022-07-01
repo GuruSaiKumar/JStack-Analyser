@@ -3,6 +3,7 @@ package com.sprinklr.JStack.Analyser.service;
 import com.sprinklr.JStack.Analyser.model.CombinedThreadDump;
 import com.sprinklr.JStack.Analyser.model.SingleThreadDump;
 import com.sprinklr.JStack.Analyser.repositaries.CombinedThreadDumpRepo;
+import com.sprinklr.JStack.Analyser.repositaries.SingleThreadDumpRepo;
 import com.sprinklr.JStack.Analyser.utils.CombinedThreadDumpUtil;
 import com.sprinklr.JStack.Analyser.utils.SingleThreadDumpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,13 @@ import java.util.*;
 @Service
 public class ThreadDumpServiceImpl implements ThreadDumpService {
     private final CombinedThreadDumpRepo combinedThreadDumpRepo;
+    private final SingleThreadDumpRepo singleThreadDumpRepo;
 
     //    Auto wiring constructor means auto wiring all properties
     @Autowired
-    public ThreadDumpServiceImpl(CombinedThreadDumpRepo combinedThreadDumpRepo) {
+    public ThreadDumpServiceImpl(CombinedThreadDumpRepo combinedThreadDumpRepo, SingleThreadDumpRepo singleThreadDumpRepo) {
         this.combinedThreadDumpRepo = combinedThreadDumpRepo;
+        this.singleThreadDumpRepo = singleThreadDumpRepo;
     }
 
     @Override
@@ -42,6 +45,9 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
             }
         }
         if(Objects.equals(saveToDb, "true")) {
+            for(SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
+                singleThreadDumpRepo.save(singleThreadDump);
+            }
             combinedThreadDumpRepo.save(combinedThreadDump);
         }
         return combinedThreadDump;

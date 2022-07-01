@@ -1,6 +1,7 @@
 package com.sprinklr.JStack.Analyser.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 public class CombinedThreadDump {
     @Id
     private String id;
+    @DBRef
     private ArrayList<SingleThreadDump> lisOfSingleThreadDump;
     private HashMap<Integer, ArrayList<String>> infiniteLoopingThreads; // (stack trace)hashId -> list of tid
     private HashMap<Integer, ArrayList<String>> commonWaitingThreads;// (stack trace)hashId -> list of tid
