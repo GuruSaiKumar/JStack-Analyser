@@ -34,7 +34,13 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         }
         //After adding all the singleThreadDumps analyse common props.
             CombinedThreadDumpUtil.analyseCommonStuff(combinedThreadDump);
-        //We are not saving it into database.
+        //If saveToDB == "check" then this request is coming from cronjob
+        if(Objects.equals(saveToDb, "check")){
+            //Check if our dump crosses threshold.
+            if(crossingThreshold(combinedThreadDump)){
+                saveToDb = "true";
+            }
+        }
         if(Objects.equals(saveToDb, "true")) {
             combinedThreadDumpRepo.save(combinedThreadDump);
         }
@@ -118,5 +124,22 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         return allDumps;
     }
 
+    private boolean crossingThreshold(CombinedThreadDump combinedThreadDump){
+        boolean crossingThreshold = false;
+        int numberOfDumps = combinedThreadDump.getLisOfSingleThreadDump().size();
+        //Check thread count
+        long totalThreadCount = 0;
+        boolean deadLockPresent = false;
+        long commonBlockedThreads = combinedThreadDump.getCommonBlockedThreads().size();
 
+        for(SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
+            totalThreadCount+=singleThreadDump.getAllThreads().size();
+            deadLockPresent = (deadLockPresent || (singleThreadDump.getDeadLockedThreadIds().size()>0));
+        }
+        //Average threadCount > 1000
+        if(totalThreadCount/numberOfDumps > 0) crossingThreshold = true;
+        if(deadLockPresent) crossingThreshold = true;
+        if(commonBlockedThreads>10) crossingThreshold = true;
+        return crossingThreshold;
+    }
 }
