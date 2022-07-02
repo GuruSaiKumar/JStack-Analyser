@@ -49,7 +49,11 @@ public class Mycontroller {
     public Optional<CombinedThreadDump> getFromDb(@PathVariable String id){
         return this.threadDumpService.getCombinedThreadDump(id);
     }
-
+    @CrossOrigin
+    @DeleteMapping
+    public void deleteFromDb(@PathVariable String id){
+        this.threadDumpService.deleteCombinedThreadDump(id);
+    }
     private String getFileDataAsString(MultipartFile file) {
         String fileData = "";
         try {

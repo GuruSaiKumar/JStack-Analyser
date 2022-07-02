@@ -59,6 +59,17 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
     }
 
     @Override
+    public void deleteCombinedThreadDump(String id){
+        Optional<CombinedThreadDump> result = getCombinedThreadDump(id);
+        if(result.isEmpty()) return;
+
+        CombinedThreadDump combinedThreadDump = getCombinedThreadDump(id).get();
+        for( SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
+            singleThreadDumpRepo.deleteById(singleThreadDump.getId());
+        }
+        combinedThreadDumpRepo.deleteById(id);
+    }
+    @Override
     public CombinedThreadDump editOutputUsingParams(CombinedThreadDump originalResult, List<String> params) {
         if (params.contains("all")) return originalResult;
         CombinedThreadDump editedResult = new CombinedThreadDump();

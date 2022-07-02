@@ -11,4 +11,5 @@ public interface ThreadDumpService {
     CombinedThreadDump editOutputUsingParams(CombinedThreadDump combinedThreadDump, List<String> params);
 
     Optional<CombinedThreadDump> getCombinedThreadDump(String id);
+    void deleteCombinedThreadDump(String id);
 }
