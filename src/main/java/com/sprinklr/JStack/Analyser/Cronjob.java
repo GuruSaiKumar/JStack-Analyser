@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 public class Cronjob {
     @Autowired
     private ThreadDumpService threadDumpService;
-    //TODO: Set the PID of Application
     private final long pid = ProcessHandle.current().pid();
     private final String FRONT_END_URL = "http://localhost:3000";
 
