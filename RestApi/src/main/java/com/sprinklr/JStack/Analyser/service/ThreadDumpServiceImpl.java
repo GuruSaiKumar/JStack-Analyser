@@ -7,6 +7,7 @@ import com.sprinklr.JStack.Analyser.repositaries.SingleThreadDumpRepo;
 import com.sprinklr.JStack.Analyser.utils.CombinedThreadDumpUtil;
 import com.sprinklr.JStack.Analyser.utils.SingleThreadDumpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,6 +16,11 @@ import java.util.*;
 public class ThreadDumpServiceImpl implements ThreadDumpService {
     private final CombinedThreadDumpRepo combinedThreadDumpRepo;
     private final SingleThreadDumpRepo singleThreadDumpRepo;
+
+    @Value("${THRESHOLD_THREAD_COUNT:10}")
+    private  long THRESHOLD_THREAD_COUNT;
+    @Value("${MAX_BLOCKED_THREADS:10}")
+    private long MAX_BLOCKED_THREADS;
 
     //    Auto wiring constructor means auto wiring all properties
     @Autowired
@@ -32,20 +38,20 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         for (String[] eachDumpData : allDumpsData) {
             SingleThreadDump singleThreadDump = new SingleThreadDump();
             //Instead of processing everything in model we do computation in Util classes
-            SingleThreadDumpUtil.buildSingleThreadDump(singleThreadDump,eachDumpData,regex);
-            CombinedThreadDumpUtil.addSingleThreadDump(combinedThreadDump,singleThreadDump);
+            SingleThreadDumpUtil.buildSingleThreadDump(singleThreadDump, eachDumpData, regex);
+            CombinedThreadDumpUtil.addSingleThreadDump(combinedThreadDump, singleThreadDump);
         }
         //After adding all the singleThreadDumps analyse common props.
-            CombinedThreadDumpUtil.analyseCommonStuff(combinedThreadDump);
+        CombinedThreadDumpUtil.analyseCommonStuff(combinedThreadDump);
         //If saveToDB == "check" then this request is coming from cronjob
-        if(Objects.equals(saveToDb, "check")){
+        if (Objects.equals(saveToDb, "check")) {
             //Check if our dump crosses threshold.
-            if(crossingThreshold(combinedThreadDump)){
+            if (crossingThreshold(combinedThreadDump)) {
                 saveToDb = "true";
             }
         }
-        if(Objects.equals(saveToDb, "true")) {
-            for(SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
+        if (Objects.equals(saveToDb, "true")) {
+            for (SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()) {
                 singleThreadDumpRepo.save(singleThreadDump);
             }
             combinedThreadDumpRepo.save(combinedThreadDump);
@@ -59,16 +65,17 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
     }
 
     @Override
-    public void deleteCombinedThreadDump(String id){
+    public void deleteCombinedThreadDump(String id) {
         Optional<CombinedThreadDump> result = getCombinedThreadDump(id);
-        if(result.isEmpty()) return;
+        if (result.isEmpty()) return;
 
         CombinedThreadDump combinedThreadDump = getCombinedThreadDump(id).get();
-        for( SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
+        for (SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()) {
             singleThreadDumpRepo.deleteById(singleThreadDump.getId());
         }
         combinedThreadDumpRepo.deleteById(id);
     }
+
     @Override
     public CombinedThreadDump editOutputUsingParams(CombinedThreadDump originalResult, List<String> params) {
         if (params.contains("all")) return originalResult;
@@ -132,7 +139,6 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
             }
         }
         indices.add(lines.length);
-        System.out.println(indices);
         ArrayList<String[]> allDumps = new ArrayList<>();
         for (int i = 0; i < indices.size() - 1; i++) {
             String[] singleDump = Arrays.copyOfRange(lines, indices.get(i), indices.get(i + 1));
@@ -141,7 +147,7 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         return allDumps;
     }
 
-    private boolean crossingThreshold(CombinedThreadDump combinedThreadDump){
+    private boolean crossingThreshold(CombinedThreadDump combinedThreadDump) {
         boolean crossingThreshold = false;
         int numberOfDumps = combinedThreadDump.getLisOfSingleThreadDump().size();
         //Check thread count
@@ -149,14 +155,14 @@ public class ThreadDumpServiceImpl implements ThreadDumpService {
         boolean deadLockPresent = false;
         long commonBlockedThreads = combinedThreadDump.getCommonBlockedThreads().size();
 
-        for(SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()){
-            totalThreadCount+=singleThreadDump.getAllThreads().size();
-            deadLockPresent = (deadLockPresent || (singleThreadDump.getDeadLockedThreadIds().size()>0));
+        for (SingleThreadDump singleThreadDump : combinedThreadDump.getLisOfSingleThreadDump()) {
+            totalThreadCount += singleThreadDump.getAllThreads().size();
+            deadLockPresent = (deadLockPresent || (singleThreadDump.getDeadLockedThreadIds().size() > 0));
         }
-        //Average threadCount > 1000
-        if(totalThreadCount/numberOfDumps > 0) crossingThreshold = true;
-        if(deadLockPresent) crossingThreshold = true;
-        if(commonBlockedThreads>10) crossingThreshold = true;
+        //Check for Thresholds.
+        if (totalThreadCount / numberOfDumps > THRESHOLD_THREAD_COUNT) crossingThreshold = true;
+        if (deadLockPresent) crossingThreshold = true;
+        if (commonBlockedThreads > MAX_BLOCKED_THREADS) crossingThreshold = true;
         return crossingThreshold;
     }
 }

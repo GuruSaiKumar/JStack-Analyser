@@ -1,7 +1,8 @@
-package com.sprinklr.JStack.Analyser;
+package com.sprinklr.Cronjob;
 import com.sprinklr.JStack.Analyser.model.CombinedThreadDump;
 import com.sprinklr.JStack.Analyser.service.ThreadDumpService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,20 +11,24 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+
 @Component
 public class Cronjob {
     @Autowired
     private ThreadDumpService threadDumpService;
-    private final long pid = ProcessHandle.current().pid();
-    private final String FRONT_END_URL = "http://localhost:3000";
+    @Value("${APP_PID}")
+    private long pid;
+    @Value("${FRONT_END_URL:http://localhost:3000}")
+    private String FRONT_END_URL;
 
     @Scheduled(fixedRate = 5000000)
     public void scheduledProcess() throws IOException, InterruptedException {
-        System.out.println("Going to start taking taking ");
+        System.out.println("Going to start taking Thread Dumps ");
         String jStackPath = generateJStack();
         System.out.println("Completed taking a full JStack File");
         analyseJStack(jStackPath);
-        System.out.println("Processing complete");
+        System.out.println("Analysing complete");
+        deleteJStack(jStackPath);
     }
     private void analyseJStack(String jStackPath) throws IOException {
         String content = Files.readString(Paths.get(jStackPath));
@@ -37,7 +42,7 @@ public class Cronjob {
     }
 
     private void takeAction(String id) {
-        System.out.println("crossed the threshold, Please see report at :");
+        System.out.println("Crossed the threshold, Please see report at :");
         String reportUrl = FRONT_END_URL + "/dbId/" + id + "/singleDumpReport";
         System.out.println(reportUrl);
     }
@@ -45,7 +50,7 @@ public class Cronjob {
     private String generateJStack() throws IOException, InterruptedException {
         //The path of newly created JStack
         String filePath = "./outputs/JStack_at_" + new Date() + ".txt";
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 2; i++) {
             if(i>1){
                 TimeUnit.SECONDS.sleep(10);
             }
@@ -68,5 +73,9 @@ public class Cronjob {
         }
         bufferedWriter.flush();
         bufferedWriter.close();
+    }
+
+    private void deleteJStack(String filePath){
+        new File(filePath).delete();
     }
 }

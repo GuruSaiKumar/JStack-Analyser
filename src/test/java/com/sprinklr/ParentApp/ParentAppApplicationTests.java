@@ -1,10 +1,10 @@
-package com.sprinklr.JStack.Analyser;
+package com.sprinklr.ParentApp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class JStackAnalyserApplicationTests {
+class ParentAppApplicationTests {
 
 	@Test
 	void contextLoads() {

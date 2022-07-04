@@ -2,28 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<modules>
+		<module>RestApi</module>
+		<module>cronjob</module>
+	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.0</version>
+		<version>2.7.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.sprinklr</groupId>
-	<artifactId>JStack-Analyser</artifactId>
+	<artifactId>ParentApp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>JStack-Analyser</name>
-	<description>An in-house JStack analyser tool/API using spring boot that can parse JStack files and provide meaningful insights from them.</description>
+	<packaging>pom</packaging>
+	<name>ParentApp</name>
+	<description>Parent Application for our Rest API and Cronjob</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-mongodb</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 
 		<dependency>
